@@ -155,7 +155,7 @@ def load_chatbot():
             
         # Create chunks and embeddings
         chunks = vectorizer.get_text_chunks(text)
-        index, dimension = vectorizer.create_vector_store(chunks)
+        index, embeddings = vectorizer.create_vector_store(chunks)
         
         # Get API key from Streamlit secrets
         api_key = st.secrets["openrouter"]["api_key"]

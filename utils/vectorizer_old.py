@@ -24,41 +24,40 @@ class TextVectorizer:
             
         return chunks
 
-    def create_vector_store(self, chunks: List[str]) -> Tuple[NearestNeighbors, np.ndarray]:
-        """Create sklearn NearestNeighbors vector store from text chunks."""
+    def create_vector_store(self, chunks: List[str]) -> Tuple[faiss.Index, int]:
+        """Create FAISS vector store from text chunks."""
         # Create embeddings
         embeddings = self.model.encode(chunks)
-        embeddings = np.array(embeddings).astype('float32')
         
-        # Initialize NearestNeighbors index
-        index = NearestNeighbors(n_neighbors=min(3, len(chunks)), metric='cosine', algorithm='auto')
-        index.fit(embeddings)
+        # Initialize FAISS index
+        dimension = embeddings.shape[1]
+        index = faiss.IndexFlatL2(dimension)
         
-        return index, embeddings
+        # Add vectors to index
+        index.add(np.array(embeddings).astype('float32'))
+        
+        return index, dimension
 
-    def save_vector_store(self, file_path: str, index: NearestNeighbors, chunks: List[str], embeddings: np.ndarray):
+    def save_vector_store(self, file_path: str, index: faiss.Index, chunks: List[str], dimension: int):
         """Save the vector store to disk."""
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, 'wb') as f:
             pickle.dump({
                 'index': index,
                 'chunks': chunks,
-                'embeddings': embeddings
+                'dimension': dimension
             }, f)
 
-    def load_vector_store(self, file_path: str) -> Tuple[NearestNeighbors, List[str], np.ndarray]:
+    def load_vector_store(self, file_path: str) -> Tuple[faiss.Index, List[str], int]:
         """Load the vector store from disk."""
         with open(file_path, 'rb') as f:
             data = pickle.load(f)
-        return data['index'], data['chunks'], data['embeddings']
+        return data['index'], data['chunks'], data['dimension']
 
-    def search(self, query: str, index: NearestNeighbors, chunks: List[str], k: int = 3) -> List[Tuple[str, float]]:
+    def search(self, query: str, index: faiss.Index, chunks: List[str], k: int = 3) -> List[Tuple[str, float]]:
         """Search for relevant chunks given a query."""
         query_vector = self.model.encode([query])
-        query_vector = np.array(query_vector).astype('float32').reshape(1, -1)
-        
-        k = min(k, len(chunks))  # Ensure k doesn't exceed number of chunks
-        distances, indices = index.kneighbors(query_vector, n_neighbors=k)
+        distances, indices = index.search(np.array(query_vector).astype('float32'), k)
         
         results = []
         for idx, distance in zip(indices[0], distances[0]):
@@ -71,14 +70,5 @@ if __name__ == "__main__":
     OUTPUT_FILE = os.path.join("data", "vector_store.pkl")
     
     vectorizer = TextVectorizer()
-    
-    # Read input text
-    with open(INPUT_FILE, 'r', encoding='utf-8') as f:
-        text = f.read()
-    
-    # Create chunks and vector store
-    chunks = vectorizer.get_text_chunks(text)
-    index, embeddings = vectorizer.create_vector_store(chunks)
-    vectorizer.save_vector_store(OUTPUT_FILE, index, chunks, embeddings)
-    
+    vectorizer.create_vector_store(INPUT_FILE, OUTPUT_FILE)
     print(f"Vector store created and saved to {OUTPUT_FILE}")
