@@ -1,0 +1,31 @@
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Secrets
+secrets/
+*.env
+
+# Data files
+data/*.pkl
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Windows specific
+desktop.ini
+Thumbs.db
