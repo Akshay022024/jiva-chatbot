@@ -16,6 +16,16 @@ st.set_page_config(
     layout="wide"
 )
 
+# Set torch settings for compatibility
+try:
+    import torch
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    torch.set_grad_enabled(False)
+    torch.set_num_threads(1)
+except Exception as e:
+    st.warning(f"Note: Running without GPU acceleration: {str(e)}")
+
 # CSS: Fixed-width input bar, clean chat bubbles, mobile-friendly
 st.markdown("""
 <style>
