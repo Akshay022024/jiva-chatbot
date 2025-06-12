@@ -9,24 +9,12 @@ sys.path.insert(0, project_root)
 from utils.vectorizer import TextVectorizer
 from utils.rag_llm import RAGLLM
 
-def init_page():
-    """Initialize page configuration"""
-    st.set_page_config(
-        page_title="JivaBot - Jiva Infotech Assistant",
-        page_icon="🤖",
-        layout="wide"
-    )
-
-def init_torch():
-    """Initialize torch settings"""
-    try:
-        import torch
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
-        torch.set_grad_enabled(False)
-        torch.set_num_threads(1)
-    except Exception as e:
-        st.warning(f"Note: Running without GPU acceleration: {str(e)}")
+# Page config - moved to top level to avoid issues
+st.set_page_config(
+    page_title="JivaBot - Jiva Infotech Assistant",
+    page_icon="🤖",
+    layout="wide"
+)
 
 # CSS: Fixed-width input bar, clean chat bubbles, mobile-friendly
 st.markdown("""
@@ -208,10 +196,6 @@ def process_query():
 
 def main():
     """Main function to run the Streamlit app."""
-    # Initialize the page and torch settings
-    init_page()
-    init_torch()
-    
     st.title("🤖 JivaBot")
     st.subheader("Your AI Assistant for Jiva Infotech")
 

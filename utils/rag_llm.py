@@ -24,14 +24,9 @@ def retry_with_backoff(retries=3, backoff_in_seconds=1):
     return decorator
 
 class RAGLLM:
-    def __init__(self, api_key_file: str):
+    def __init__(self, api_key: str):
         self.api_url = "https://openrouter.ai/api/v1/chat/completions"
-        self.load_api_key(api_key_file)
-
-    def load_api_key(self, api_key_file: str):
-        """Load OpenRouter API key from file."""
-        with open(api_key_file, 'r') as f:
-            self.api_key = f.read().strip()
+        self.api_key = api_key
 
     def build_prompt(self, query: str, context_chunks: List[str]) -> List[Dict[str, str]]:
         """Build a RAG prompt with context."""
@@ -82,8 +77,9 @@ class RAGLLM:
 
 if __name__ == "__main__":
     # Test the module
-    API_KEY_FILE = os.path.join("secrets", "openrouter_api_key.txt")
-    rag = RAGLLM(API_KEY_FILE)
+    import os
+    test_api_key = os.getenv("OPENROUTER_API_KEY", "test-key")
+    rag = RAGLLM(test_api_key)
     
     # Example usage
     test_chunks = ["Jiva Infotech is a leading technology company."]

@@ -11,7 +11,7 @@ class TextVectorizer:
         self.chunk_size = 400  # approximate tokens per chunk
         self.overlap = 50  # overlap between chunks
 
-    def chunk_text(self, text: str) -> List[str]:
+    def get_text_chunks(self, text: str) -> List[str]:
         """Split text into overlapping chunks."""
         words = text.split()
         chunks = []
@@ -24,15 +24,8 @@ class TextVectorizer:
             
         return chunks
 
-    def create_vector_store(self, input_file: str, output_file: str):
+    def create_vector_store(self, chunks: List[str]) -> Tuple[faiss.Index, int]:
         """Create FAISS vector store from text chunks."""
-        # Read input text
-        with open(input_file, 'r', encoding='utf-8') as f:
-            text = f.read()
-
-        # Create chunks
-        chunks = self.chunk_text(text)
-        
         # Create embeddings
         embeddings = self.model.encode(chunks)
         
@@ -43,9 +36,12 @@ class TextVectorizer:
         # Add vectors to index
         index.add(np.array(embeddings).astype('float32'))
         
-        # Save everything
-        os.makedirs(os.path.dirname(output_file), exist_ok=True)
-        with open(output_file, 'wb') as f:
+        return index, dimension
+
+    def save_vector_store(self, file_path: str, index: faiss.Index, chunks: List[str], dimension: int):
+        """Save the vector store to disk."""
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        with open(file_path, 'wb') as f:
             pickle.dump({
                 'index': index,
                 'chunks': chunks,
