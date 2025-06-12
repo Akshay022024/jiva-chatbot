@@ -9,22 +9,24 @@ sys.path.insert(0, project_root)
 from utils.vectorizer import TextVectorizer
 from utils.rag_llm import RAGLLM
 
-# Page config
-st.set_page_config(
-    page_title="JivaBot - Jiva Infotech Assistant",
-    page_icon="🤖",
-    layout="wide"
-)
+def init_page():
+    """Initialize page configuration"""
+    st.set_page_config(
+        page_title="JivaBot - Jiva Infotech Assistant",
+        page_icon="🤖",
+        layout="wide"
+    )
 
-# Set torch settings for compatibility
-try:
-    import torch
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-    torch.set_grad_enabled(False)
-    torch.set_num_threads(1)
-except Exception as e:
-    st.warning(f"Note: Running without GPU acceleration: {str(e)}")
+def init_torch():
+    """Initialize torch settings"""
+    try:
+        import torch
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        torch.set_grad_enabled(False)
+        torch.set_num_threads(1)
+    except Exception as e:
+        st.warning(f"Note: Running without GPU acceleration: {str(e)}")
 
 # CSS: Fixed-width input bar, clean chat bubbles, mobile-friendly
 st.markdown("""
@@ -178,6 +180,7 @@ def load_chatbot():
         st.stop()
 
 def initialize_session_state():
+    """Initialize session state variables."""
     if "messages" not in st.session_state:
         st.session_state.messages = []
     if "show_context" not in st.session_state:
@@ -186,6 +189,7 @@ def initialize_session_state():
         st.session_state.user_input = ""
 
 def process_query():
+    """Process the user's query and generate a response."""
     query = st.session_state.user_input
     if query.strip():
         st.session_state.messages.append({"role": "user", "content": query})
@@ -203,36 +207,49 @@ def process_query():
         st.session_state.user_input = ""
 
 def main():
+    """Main function to run the Streamlit app."""
+    # Initialize the page and torch settings
+    init_page()
+    init_torch()
+    
     st.title("🤖 JivaBot")
     st.subheader("Your AI Assistant for Jiva Infotech")
 
     initialize_session_state()
 
+    # Sidebar
     with st.sidebar:
         st.markdown("### Settings")
         st.session_state.show_context = st.checkbox(
-            "Show retrieved context", value=st.session_state.show_context
+            "Show retrieved context",
+            value=st.session_state.show_context
         )
 
-    with st.container():
+    # Chat container
+    chat_container = st.container()
+    with chat_container:
         st.markdown('<div class="chat-box">', unsafe_allow_html=True)
         for message in st.session_state.messages:
             if message["role"] == "user":
-                st.markdown(f'<div class="user-message">{message["content"]}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="user-message">{message["content"]}</div>',
+                           unsafe_allow_html=True)
             else:
-                st.markdown(f'<div class="bot-message">{message["content"]}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="bot-message">{message["content"]}</div>',
+                           unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
+    # Input form
     with st.form(key="message_form", clear_on_submit=True):
-        col1, col2 = st.columns([6, 1])
+        col1, col2 = st.columns([6,1])
         with col1:
             st.text_input(
-                "Message", key="user_input",
+                "Message",
+                key="user_input",
                 placeholder="Type your message here...",
                 label_visibility="collapsed"
             )
         with col2:
-            st.form_submit_button("Send", on_click=process_query)
+            submit_button = st.form_submit_button("Send", on_click=process_query)
 
 if __name__ == "__main__":
     main()
