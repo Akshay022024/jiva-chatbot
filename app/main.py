@@ -139,11 +139,39 @@ div[data-testid="stForm"] {
 
 @st.cache_resource
 def load_chatbot():
+    """Load the chatbot components with caching."""
     vectorizer = TextVectorizer()
     vector_store = os.path.join("data", "vector_store.pkl")
-    index, chunks, dimension = vectorizer.load_vector_store(vector_store)
-    api_key_file = os.path.join("secrets", "openrouter_api_key.txt")
-    rag_llm = RAGLLM(api_key_file)
+    
+    try:
+        # Try to load existing vector store
+        index, chunks, dimension = vectorizer.load_vector_store(vector_store)
+    except (FileNotFoundError, EOFError):
+        # If vector store doesn't exist, create it from website_data.txt
+        st.info("Initializing vector store for the first time. This may take a moment...")
+        
+        # Read and process website data
+        website_data_path = os.path.join("data", "website_data.txt")
+        if not os.path.exists(website_data_path):
+            st.error("Required data file 'website_data.txt' not found!")
+            st.stop()
+            
+        with open(website_data_path, 'r', encoding='utf-8') as f:
+            text = f.read()
+        
+        # Create chunks and embeddings
+        chunks = vectorizer.get_text_chunks(text)
+        index, dimension = vectorizer.create_vector_store(chunks)
+        
+        # Save the vector store
+        os.makedirs("data", exist_ok=True)
+        vectorizer.save_vector_store(vector_store, index, chunks, dimension)
+        st.success("Vector store initialized successfully!")
+    
+    # Get API key from Streamlit secrets
+    api_key = st.secrets["openrouter"]["api_key"]
+    rag_llm = RAGLLM(api_key)
+    
     return vectorizer, index, chunks, rag_llm
 
 def initialize_session_state():
