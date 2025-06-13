@@ -37,7 +37,8 @@
 
 🌐 **Try it now:** [https://jiva-chatbot.streamlit.app](https://jiva-chatbot.streamlit.app)
 
-![JivaBot Demo](https://via.placeholder.com/800x400/667eea/ffffff?text=JivaBot+Professional+Chat+Interface)
+![JivaBot Demo](![image](https://github.com/user-attachments/assets/ee67503a-2d61-4706-b481-fac2879f14d5)
+)
 
 ## 🏗️ **Architecture Overview**
 
