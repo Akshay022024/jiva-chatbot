@@ -7,14 +7,11 @@ font = "sans serif"
 
 [server]
 maxUploadSize = 200
-enableCORS = false
+enableCORS = true
 runOnSave = false
 fileWatcherType = "none"
 enableStaticServing = false
 enableWebsocketCompression = false
-
-[global]
-disableWatchdogWarning = true
 
 [browser]
 gatherUsageStats = false
