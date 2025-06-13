@@ -229,6 +229,8 @@ def initialize_session_state():
         st.session_state.show_context = False
     if "user_input" not in st.session_state:
         st.session_state.user_input = ""
+    if "last_context" not in st.session_state:
+        st.session_state.last_context = None
 
 def main():
     """Main function to run the Streamlit app."""
@@ -331,6 +333,29 @@ def main():
                 </div>
                 """, unsafe_allow_html=True)
 
+    # Display retrieved context if enabled and available
+    if st.session_state.show_context and st.session_state.last_context:
+        with st.expander("🔍 Retrieved Context (from last query)", expanded=True):
+            st.markdown("**These are the most relevant pieces of information found in the knowledge base:**")
+            for i, (chunk, score) in enumerate(st.session_state.last_context, 1):
+                with st.container():
+                    col1, col2 = st.columns([4, 1])
+                    with col1:
+                        st.markdown(f"**📄 Context Chunk {i}**")
+                    with col2:
+                        st.metric("Relevance", f"{score:.2f}")
+                    
+                    st.markdown(
+                        f"""
+                        <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
+                                    padding: 15px; border-radius: 10px; margin: 10px 0; 
+                                    border-left: 4px solid #667eea; color: #2c3e50;">
+                            {chunk}
+                        </div>
+                        """, 
+                        unsafe_allow_html=True
+                    )
+
     # Chat input - modern Streamlit chat input
     if user_input := st.chat_input("Ask me anything about Jiva Infotech..."):
         # Add user message
@@ -348,30 +373,30 @@ def main():
                     vectorizer, index, chunks, rag_llm = load_chatbot()
                     results = vectorizer.search(user_input, index, chunks)
                     context_chunks = [chunk for chunk, _ in results]
-                    
-                    if st.session_state.show_context:
-                        with st.expander("Retrieved Context"):
-                            for i, (chunk, score) in enumerate(results, 1):
-                                st.markdown(f"**Chunk {i}** (relevance: {score:.2f})")
-                                st.markdown(chunk)
-                    
                     response = rag_llm.generate_response(user_input, context_chunks)
-                    st.session_state.messages.append({"role": "assistant", "content": response})
+                    
+                # Store context for display if enabled
+                if st.session_state.show_context:
+                    st.session_state.last_context = results
+                else:
+                    st.session_state.last_context = None
+                    
+                st.session_state.messages.append({"role": "assistant", "content": response})
             else:
                 # Regular loading message for subsequent queries
                 with st.spinner("💭 Thinking..."):
                     vectorizer, index, chunks, rag_llm = load_chatbot()
                     results = vectorizer.search(user_input, index, chunks)
                     context_chunks = [chunk for chunk, _ in results]
-                    
-                    if st.session_state.show_context:
-                        with st.expander("Retrieved Context"):
-                            for i, (chunk, score) in enumerate(results, 1):
-                                st.markdown(f"**Chunk {i}** (relevance: {score:.2f})")
-                                st.markdown(chunk)
-                    
                     response = rag_llm.generate_response(user_input, context_chunks)
-                    st.session_state.messages.append({"role": "assistant", "content": response})
+                    
+                # Store context for display if enabled
+                if st.session_state.show_context:
+                    st.session_state.last_context = results
+                else:
+                    st.session_state.last_context = None
+                    
+                st.session_state.messages.append({"role": "assistant", "content": response})
                 
         except Exception as e:
             error_msg = str(e)
