@@ -4,14 +4,25 @@ import pickle
 from sklearn.neighbors import NearestNeighbors
 import numpy as np
 
-# Import sentence-transformers with torch warning suppression
-import warnings
-warnings.filterwarnings("ignore", category=UserWarning)
-warnings.filterwarnings("ignore", category=FutureWarning)
+# Import torch utilities for safe setup
+try:
+    from .torch_utils import setup_torch_environment, suppress_all_warnings, safe_torch_import
+    setup_torch_environment()
+    suppress_all_warnings()
+    # Pre-import torch safely
+    safe_torch_import()
+except ImportError:
+    # Fallback to manual setup
+    os.environ.update({
+        "TOKENIZERS_PARALLELISM": "false",
+        "TORCH_DISABLE_WATCHDOG": "1",
+        "TORCH_JIT_DISABLE_WATCHDOG": "1",
+        "STREAMLIT_WATCHER_IGNORE_MODULES": "torch,torch.classes,torch.jit,torch.nn,torch.utils",
+    })
+    import warnings
+    warnings.filterwarnings("ignore")
 
 try:
-    # Suppress torch warnings
-    os.environ["TOKENIZERS_PARALLELISM"] = "false"
     from sentence_transformers import SentenceTransformer
 except ImportError as e:
     raise ImportError(f"sentence-transformers is required: {e}")

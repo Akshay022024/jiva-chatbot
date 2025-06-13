@@ -1,14 +1,38 @@
-import streamlit as st
-import sys
 import os
+import sys
+import warnings
 
-# Prevent torch watcher issues in Streamlit Cloud
-os.environ["STREAMLIT_WATCHER_IGNORE_MODULES"] = "torch,torch.classes"
-os.environ["STREAMLIT_SERVER_RUN_ON_SAVE"] = "false"
-
-# Add the current directory to Python path for imports
+# Add current directory to path before any other imports
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, current_dir)
+
+# Import and setup torch utilities
+try:
+    from utils.torch_utils import setup_torch_environment, suppress_all_warnings
+    setup_torch_environment()
+    suppress_all_warnings()
+except ImportError:
+    # Fallback to manual setup
+    os.environ.update({
+        "STREAMLIT_WATCHER_IGNORE_MODULES": "torch,torch.classes,torch.jit,torch.nn,torch.utils",
+        "STREAMLIT_SERVER_RUN_ON_SAVE": "false",
+        "STREAMLIT_BROWSER_GATHER_USAGE_STATS": "false",
+        "STREAMLIT_GLOBAL_DISABLE_WATCHDOG_WARNING": "true",
+        "TORCH_DISABLE_WATCHDOG": "1",
+        "TORCH_JIT_DISABLE_WATCHDOG": "1",
+        "PYTHONUNBUFFERED": "1"
+    })
+    warnings.filterwarnings('ignore')
+
+import streamlit as st
+
+# Set Streamlit page config first
+st.set_page_config(
+    page_title="JivaBot",
+    page_icon="🤖",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 try:
     from app.main import main

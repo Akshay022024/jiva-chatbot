@@ -2,22 +2,27 @@ import streamlit as st
 import os
 import sys
 
-# Suppress warnings and torch issues
-import warnings
-warnings.filterwarnings("ignore")
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
-os.environ["STREAMLIT_WATCHER_IGNORE_MODULES"] = "torch,torch.classes"
-
-# Add project root to Python path
+# Add project root to Python path first
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
-# Page config - moved to top level to avoid issues
-st.set_page_config(
-    page_title="JivaBot - Jiva Infotech Assistant",
-    page_icon="🤖",
-    layout="wide"
-)
+# Import and setup torch utilities
+try:
+    from utils.torch_utils import setup_torch_environment, suppress_all_warnings
+    setup_torch_environment()
+    suppress_all_warnings()
+except ImportError:
+    # Fallback to manual setup
+    os.environ.update({
+        "TOKENIZERS_PARALLELISM": "false",
+        "STREAMLIT_WATCHER_IGNORE_MODULES": "torch,torch.classes,torch.jit,torch.nn,torch.utils",
+        "STREAMLIT_SERVER_RUN_ON_SAVE": "false",
+        "TORCH_DISABLE_WATCHDOG": "1",
+        "TORCH_JIT_DISABLE_WATCHDOG": "1",
+        "PYTHONUNBUFFERED": "1"
+    })
+    import warnings
+    warnings.filterwarnings("ignore")
 
 # Import utilities with error handling
 try:
