@@ -19,6 +19,11 @@ warnings.filterwarnings('ignore')
 # Add current directory to path before any other imports
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, current_dir)
+        "TORCH_DISABLE_WATCHDOG": "1",
+        "TORCH_JIT_DISABLE_WATCHDOG": "1",
+        "PYTHONUNBUFFERED": "1"
+    })
+    warnings.filterwarnings('ignore')
 
 import streamlit as st
 

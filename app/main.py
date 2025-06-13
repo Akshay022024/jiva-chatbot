@@ -1,18 +1,32 @@
 import streamlit as st
 import os
 import sys
+import warnings
 
-# Add project root to Python path first
+# Comprehensive torch watcher prevention - must be set before any imports
+os.environ.update({
+    "TOKENIZERS_PARALLELISM": "false",
+    "STREAMLIT_WATCHER_IGNORE_MODULES": "torch,torch.classes,torch.jit,torch.nn,torch.utils",
+    "STREAMLIT_SERVER_RUN_ON_SAVE": "false",
+    "TORCH_DISABLE_WATCHDOG": "1",
+    "TORCH_JIT_DISABLE_WATCHDOG": "1",
+    "PYTHONUNBUFFERED": "1"
+})
+
+# Suppress ALL warnings
+warnings.filterwarnings("ignore")
+
+# Add project root to Python path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
-# Import and setup torch utilities
+# Monkey patch torch to disable watchers if imported
 try:
-    from utils.torch_utils import setup_torch_environment, suppress_all_warnings
-    setup_torch_environment()
-    suppress_all_warnings()
+    import torch
+    if hasattr(torch, 'jit') and hasattr(torch.jit, '_set_jit_logging'):
+        torch.jit._set_jit_logging(False)
 except ImportError:
-    # Fallback to manual setup
+    pass
     os.environ.update({
         "TOKENIZERS_PARALLELISM": "false",
         "STREAMLIT_WATCHER_IGNORE_MODULES": "torch,torch.classes,torch.jit,torch.nn,torch.utils",

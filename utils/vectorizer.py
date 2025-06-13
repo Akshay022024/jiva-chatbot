@@ -4,15 +4,29 @@ import pickle
 from sklearn.neighbors import NearestNeighbors
 import numpy as np
 
-# Import torch utilities for safe setup
+# Comprehensive torch watcher prevention
+os.environ.update({
+    "TOKENIZERS_PARALLELISM": "false",
+    "TORCH_DISABLE_WATCHDOG": "1",
+    "TORCH_JIT_DISABLE_WATCHDOG": "1",
+    "STREAMLIT_WATCHER_IGNORE_MODULES": "torch,torch.classes,torch.jit,torch.nn,torch.utils",
+})
+
+# Import sentence-transformers with torch warning suppression
+import warnings
+warnings.filterwarnings("ignore")
+
 try:
-    from .torch_utils import setup_torch_environment, suppress_all_warnings, safe_torch_import
-    setup_torch_environment()
-    suppress_all_warnings()
-    # Pre-import torch safely
-    safe_torch_import()
-except ImportError:
-    # Fallback to manual setup
+    from sentence_transformers import SentenceTransformer
+    # Disable torch JIT logging if available
+    try:
+        import torch
+        if hasattr(torch, 'jit') and hasattr(torch.jit, '_set_jit_logging'):
+            torch.jit._set_jit_logging(False)
+    except ImportError:
+        pass
+except ImportError as e:
+    raise ImportError(f"sentence-transformers is required: {e}")
     os.environ.update({
         "TOKENIZERS_PARALLELISM": "false",
         "TORCH_DISABLE_WATCHDOG": "1",
