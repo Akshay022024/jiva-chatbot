@@ -283,28 +283,38 @@ def main():
             st.metric("Questions Asked", user_messages)
             st.metric("Responses Given", bot_messages)
 
-    # Chat container
+    # Chat container - Display all messages
     chat_container = st.container()
     with chat_container:
-        st.markdown('<div class="chat-container">', unsafe_allow_html=True)
-        
         if not st.session_state.messages:
             st.markdown("""
-            <div style="text-align: center; padding: 50px 20px; color: #666;">
+            <div style="text-align: center; padding: 50px 20px; color: #666; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 15px; margin: 20px 0;">
                 <h3>👋 Welcome to JivaBot!</h3>
                 <p>I'm here to help you with information about Jiva Infotech.</p>
                 <p>Ask me anything about our services, policies, or procedures!</p>
             </div>
             """, unsafe_allow_html=True)
         
-        for message in st.session_state.messages:
+        # Display chat messages with proper styling
+        for i, message in enumerate(st.session_state.messages):
             if message["role"] == "user":
-                st.markdown(f'<div class="user-bubble">{message["content"]}</div>',
-                           unsafe_allow_html=True)
+                # User message - aligned right
+                st.markdown(f"""
+                <div style="display: flex; justify-content: flex-end; margin: 15px 0;">
+                    <div class="user-bubble" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 20px; border-radius: 25px 25px 8px 25px; max-width: 70%; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); animation: slideInRight 0.3s ease-out;">
+                        {message["content"]}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
             else:
-                st.markdown(f'<div class="bot-bubble">{message["content"]}</div>',
-                           unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+                # Bot message - aligned left
+                st.markdown(f"""
+                <div style="display: flex; justify-content: flex-start; margin: 15px 0;">
+                    <div class="bot-bubble" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 15px 20px; border-radius: 25px 25px 25px 8px; max-width: 80%; box-shadow: 0 4px 12px rgba(240, 147, 251, 0.3); animation: slideInLeft 0.3s ease-out;">
+                        {message["content"]}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
 
     # Chat input - modern Streamlit chat input
     if user_input := st.chat_input("Ask me anything about Jiva Infotech..."):
