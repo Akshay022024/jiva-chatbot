@@ -98,13 +98,20 @@ st.markdown("""
 
 /* Animations */
 @keyframes slideInRight {
-    from { transform: translateX(30px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+    from { transform: translateX(50px); opacity: 0; scale: 0.8; }
+    to { transform: translateX(0); opacity: 1; scale: 1; }
 }
 
 @keyframes slideInLeft {
-    from { transform: translateX(-30px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+    from { transform: translateX(-50px); opacity: 0; scale: 0.8; }
+    to { transform: translateX(0); opacity: 1; scale: 1; }
+}
+
+/* Hover effects */
+.message-bubble:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
 }
 
 /* Input container - fixed at bottom */
@@ -298,20 +305,28 @@ def main():
         # Display chat messages with proper styling
         for i, message in enumerate(st.session_state.messages):
             if message["role"] == "user":
-                # User message - aligned right
+                # User message - aligned right with avatar
                 st.markdown(f"""
-                <div style="display: flex; justify-content: flex-end; margin: 15px 0;">
-                    <div class="user-bubble" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 20px; border-radius: 25px 25px 8px 25px; max-width: 70%; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); animation: slideInRight 0.3s ease-out;">
+                <div style="display: flex; justify-content: flex-end; margin: 20px 0; align-items: flex-end;">
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 22px; border-radius: 25px 25px 8px 25px; max-width: 70%; box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); animation: slideInRight 0.4s ease-out; font-size: 0.95rem; line-height: 1.5; word-wrap: break-word; position: relative; margin-right: 10px;">
                         {message["content"]}
+                        <div style="position: absolute; bottom: -6px; right: 15px; width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 8px solid #764ba2;"></div>
+                    </div>
+                    <div style="width: 35px; height: 35px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.8rem; box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);">
+                        👤
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
             else:
-                # Bot message - aligned left
+                # Bot message - aligned left with avatar
                 st.markdown(f"""
-                <div style="display: flex; justify-content: flex-start; margin: 15px 0;">
-                    <div class="bot-bubble" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 15px 20px; border-radius: 25px 25px 25px 8px; max-width: 80%; box-shadow: 0 4px 12px rgba(240, 147, 251, 0.3); animation: slideInLeft 0.3s ease-out;">
+                <div style="display: flex; justify-content: flex-start; margin: 20px 0; align-items: flex-end;">
+                    <div style="width: 35px; height: 35px; background: linear-gradient(135deg, #f093fb, #f5576c); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.9rem; box-shadow: 0 3px 10px rgba(240, 147, 251, 0.3); margin-right: 10px;">
+                        🤖
+                    </div>
+                    <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 16px 22px; border-radius: 25px 25px 25px 8px; max-width: 75%; box-shadow: 0 6px 20px rgba(240, 147, 251, 0.4); animation: slideInLeft 0.4s ease-out; font-size: 0.95rem; line-height: 1.5; word-wrap: break-word; position: relative;">
                         {message["content"]}
+                        <div style="position: absolute; bottom: -6px; left: 15px; width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 8px solid #f5576c;"></div>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
