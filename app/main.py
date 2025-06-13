@@ -2,12 +2,15 @@ import streamlit as st
 import os
 import sys
 
+# Suppress warnings and torch issues
+import warnings
+warnings.filterwarnings("ignore")
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["STREAMLIT_WATCHER_IGNORE_MODULES"] = "torch,torch.classes"
+
 # Add project root to Python path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
-
-from utils.vectorizer import TextVectorizer
-from utils.rag_llm import RAGLLM
 
 # Page config - moved to top level to avoid issues
 st.set_page_config(
@@ -15,6 +18,15 @@ st.set_page_config(
     page_icon="🤖",
     layout="wide"
 )
+
+# Import utilities with error handling
+try:
+    from utils.vectorizer import TextVectorizer
+    from utils.rag_llm import RAGLLM
+except ImportError as e:
+    st.error(f"Failed to import required modules: {e}")
+    st.error("Please ensure all dependencies are installed correctly.")
+    st.stop()
 
 # CSS: Fixed-width input bar, clean chat bubbles, mobile-friendly
 st.markdown("""
@@ -141,7 +153,9 @@ div[data-testid="stForm"] {
 def load_chatbot():
     """Load the chatbot components with caching."""
     try:
-        vectorizer = TextVectorizer()
+        # Initialize vectorizer with error handling
+        with st.spinner("Loading AI models..."):
+            vectorizer = TextVectorizer()
         
         # Check if we have the website data
         website_data_path = os.path.join("data", "website_data.txt")
@@ -153,9 +167,10 @@ def load_chatbot():
         with open(website_data_path, 'r', encoding='utf-8') as f:
             text = f.read()
             
-        # Create chunks and embeddings
-        chunks = vectorizer.get_text_chunks(text)
-        index, embeddings = vectorizer.create_vector_store(chunks)
+        # Create chunks and embeddings with progress indicator
+        with st.spinner("Processing content..."):
+            chunks = vectorizer.get_text_chunks(text)
+            index, embeddings = vectorizer.create_vector_store(chunks)
         
         # Get API key from Streamlit secrets
         api_key = st.secrets["openrouter"]["api_key"]

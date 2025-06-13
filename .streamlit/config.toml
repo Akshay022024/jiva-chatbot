@@ -8,6 +8,11 @@ font = "sans serif"
 [server]
 maxUploadSize = 200
 enableCORS = false
+runOnSave = false
+fileWatcherType = "none"
 
 [browser]
 gatherUsageStats = false
+
+[runner]
+magicEnabled = false

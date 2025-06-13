@@ -2,12 +2,26 @@ import os
 from typing import List, Tuple
 import pickle
 from sklearn.neighbors import NearestNeighbors
-from sentence_transformers import SentenceTransformer
 import numpy as np
+
+# Import sentence-transformers with torch warning suppression
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
+
+try:
+    # Suppress torch warnings
+    os.environ["TOKENIZERS_PARALLELISM"] = "false"
+    from sentence_transformers import SentenceTransformer
+except ImportError as e:
+    raise ImportError(f"sentence-transformers is required: {e}")
 
 class TextVectorizer:
     def __init__(self, model_name: str = 'sentence-transformers/all-MiniLM-L6-v2'):
-        self.model = SentenceTransformer(model_name)
+        try:
+            self.model = SentenceTransformer(model_name)
+        except Exception as e:
+            raise RuntimeError(f"Failed to load sentence transformer model: {e}")
         self.chunk_size = 400  # approximate tokens per chunk
         self.overlap = 50  # overlap between chunks
 
