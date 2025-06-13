@@ -81,7 +81,7 @@ st.markdown("""
 
 /* Bot message bubble */
 .bot-bubble {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    background: linear-gradient(135deg, #2c3e50 0%, #4a6741 100%);
     color: white;
     padding: 15px 20px;
     border-radius: 25px 25px 25px 8px;
@@ -89,7 +89,7 @@ st.markdown("""
     max-width: 85%;
     width: fit-content;
     position: relative;
-    box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
+    box-shadow: 0 4px 12px rgba(44, 62, 80, 0.3);
     font-size: 0.95rem;
     line-height: 1.4;
     word-wrap: break-word;
@@ -318,15 +318,15 @@ def main():
                 </div>
                 """, unsafe_allow_html=True)
             else:
-                # Bot message - aligned left with avatar (Professional blue-green theme)
+                # Bot message - aligned left with avatar (Dark professional theme)
                 st.markdown(f"""
                 <div style="display: flex; justify-content: flex-start; margin: 20px 0; align-items: flex-end;">
-                    <div style="width: 35px; height: 35px; background: linear-gradient(135deg, #4facfe, #00f2fe); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.9rem; box-shadow: 0 3px 10px rgba(79, 172, 254, 0.3); margin-right: 10px;">
+                    <div style="width: 35px; height: 35px; background: linear-gradient(135deg, #2c3e50, #4a6741); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.9rem; box-shadow: 0 3px 10px rgba(44, 62, 80, 0.3); margin-right: 10px;">
                         🤖
                     </div>
-                    <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 16px 22px; border-radius: 25px 25px 25px 8px; max-width: 75%; box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4); animation: slideInLeft 0.4s ease-out; font-size: 0.95rem; line-height: 1.5; word-wrap: break-word; position: relative;">
+                    <div style="background: linear-gradient(135deg, #2c3e50 0%, #4a6741 100%); color: white; padding: 16px 22px; border-radius: 25px 25px 25px 8px; max-width: 75%; box-shadow: 0 6px 20px rgba(44, 62, 80, 0.4); animation: slideInLeft 0.4s ease-out; font-size: 0.95rem; line-height: 1.5; word-wrap: break-word; position: relative;">
                         {message["content"]}
-                        <div style="position: absolute; bottom: -6px; left: 15px; width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 8px solid #00f2fe;"></div>
+                        <div style="position: absolute; bottom: -6px; left: 15px; width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 8px solid #4a6741;"></div>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
