@@ -81,7 +81,7 @@ st.markdown("""
 
 /* Bot message bubble */
 .bot-bubble {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     color: white;
     padding: 15px 20px;
     border-radius: 25px 25px 25px 8px;
@@ -89,7 +89,7 @@ st.markdown("""
     max-width: 85%;
     width: fit-content;
     position: relative;
-    box-shadow: 0 4px 12px rgba(240, 147, 251, 0.3);
+    box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
     font-size: 0.95rem;
     line-height: 1.4;
     word-wrap: break-word;
@@ -318,15 +318,15 @@ def main():
                 </div>
                 """, unsafe_allow_html=True)
             else:
-                # Bot message - aligned left with avatar
+                # Bot message - aligned left with avatar (Professional blue-green theme)
                 st.markdown(f"""
                 <div style="display: flex; justify-content: flex-start; margin: 20px 0; align-items: flex-end;">
-                    <div style="width: 35px; height: 35px; background: linear-gradient(135deg, #f093fb, #f5576c); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.9rem; box-shadow: 0 3px 10px rgba(240, 147, 251, 0.3); margin-right: 10px;">
+                    <div style="width: 35px; height: 35px; background: linear-gradient(135deg, #4facfe, #00f2fe); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.9rem; box-shadow: 0 3px 10px rgba(79, 172, 254, 0.3); margin-right: 10px;">
                         🤖
                     </div>
-                    <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 16px 22px; border-radius: 25px 25px 25px 8px; max-width: 75%; box-shadow: 0 6px 20px rgba(240, 147, 251, 0.4); animation: slideInLeft 0.4s ease-out; font-size: 0.95rem; line-height: 1.5; word-wrap: break-word; position: relative;">
+                    <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 16px 22px; border-radius: 25px 25px 25px 8px; max-width: 75%; box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4); animation: slideInLeft 0.4s ease-out; font-size: 0.95rem; line-height: 1.5; word-wrap: break-word; position: relative;">
                         {message["content"]}
-                        <div style="position: absolute; bottom: -6px; left: 15px; width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 8px solid #f5576c;"></div>
+                        <div style="position: absolute; bottom: -6px; left: 15px; width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 8px solid #00f2fe;"></div>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -338,19 +338,40 @@ def main():
         
         # Generate response
         try:
-            with st.spinner("Thinking..."):
-                vectorizer, index, chunks, rag_llm = load_chatbot()
-                results = vectorizer.search(user_input, index, chunks)
-                context_chunks = [chunk for chunk, _ in results]
-                
-                if st.session_state.show_context:
-                    with st.expander("Retrieved Context"):
-                        for i, (chunk, score) in enumerate(results, 1):
-                            st.markdown(f"**Chunk {i}** (relevance: {score:.2f})")
-                            st.markdown(chunk)
-                
-                response = rag_llm.generate_response(user_input, context_chunks)
-                st.session_state.messages.append({"role": "assistant", "content": response})
+            # Check if this is the first message (excluding welcome)
+            user_message_count = len([m for m in st.session_state.messages if m["role"] == "user"])
+            is_first_message = user_message_count == 1
+            
+            if is_first_message:
+                # Special loading message for first query
+                with st.spinner("🚀 Setting up JivaBot... Loading AI models, processing knowledge base, and preparing everything for you. This may take a moment for the first query. Please be patient! ⏳"):
+                    vectorizer, index, chunks, rag_llm = load_chatbot()
+                    results = vectorizer.search(user_input, index, chunks)
+                    context_chunks = [chunk for chunk, _ in results]
+                    
+                    if st.session_state.show_context:
+                        with st.expander("Retrieved Context"):
+                            for i, (chunk, score) in enumerate(results, 1):
+                                st.markdown(f"**Chunk {i}** (relevance: {score:.2f})")
+                                st.markdown(chunk)
+                    
+                    response = rag_llm.generate_response(user_input, context_chunks)
+                    st.session_state.messages.append({"role": "assistant", "content": response})
+            else:
+                # Regular loading message for subsequent queries
+                with st.spinner("💭 Thinking..."):
+                    vectorizer, index, chunks, rag_llm = load_chatbot()
+                    results = vectorizer.search(user_input, index, chunks)
+                    context_chunks = [chunk for chunk, _ in results]
+                    
+                    if st.session_state.show_context:
+                        with st.expander("Retrieved Context"):
+                            for i, (chunk, score) in enumerate(results, 1):
+                                st.markdown(f"**Chunk {i}** (relevance: {score:.2f})")
+                                st.markdown(chunk)
+                    
+                    response = rag_llm.generate_response(user_input, context_chunks)
+                    st.session_state.messages.append({"role": "assistant", "content": response})
                 
         except Exception as e:
             error_msg = str(e)
