@@ -61,14 +61,38 @@ class RAGLLM:
             "temperature": 0.7
         }
         
-        response = requests.post(
-            self.api_url,
-            headers=headers,
-            json=data
-        )
-        response.raise_for_status()
-        
-        return response.json()["choices"][0]["message"]["content"]
+        try:
+            response = requests.post(
+                self.api_url,
+                headers=headers,
+                json=data,
+                timeout=30
+            )
+            
+            if response.status_code == 402:
+                raise Exception("API key has insufficient credits or payment is required. Please check your OpenRouter account.")
+            elif response.status_code == 401:
+                raise Exception("Invalid API key. Please check your OpenRouter API key configuration.")
+            elif response.status_code == 429:
+                raise Exception("Rate limit exceeded. Please try again in a moment.")
+            elif response.status_code >= 400:
+                error_msg = f"API Error {response.status_code}: {response.text}"
+                raise Exception(error_msg)
+            
+            response.raise_for_status()
+            
+            result = response.json()
+            if "choices" not in result or not result["choices"]:
+                raise Exception("Invalid response format from API")
+                
+            return result["choices"][0]["message"]["content"]
+            
+        except requests.exceptions.Timeout:
+            raise Exception("API request timed out. Please try again.")
+        except requests.exceptions.ConnectionError:
+            raise Exception("Failed to connect to API. Please check your internet connection.")
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"API request failed: {str(e)}")
 
     def generate_response(self, query: str, context_chunks: List[str]) -> str:
         """Generate a response using RAG."""

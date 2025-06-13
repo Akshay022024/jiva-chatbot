@@ -192,7 +192,24 @@ def load_chatbot():
             index, embeddings = vectorizer.create_vector_store(chunks)
         
         # Get API key from Streamlit secrets
-        api_key = st.secrets["openrouter"]["api_key"]
+        try:
+            api_key = st.secrets["openrouter"]["api_key"]
+            if not api_key or api_key.strip() == "":
+                raise KeyError("API key is empty")
+        except KeyError:
+            st.error("🔑 **API Key Not Found!**")
+            st.error("Please configure your OpenRouter API key in Streamlit Cloud secrets:")
+            st.code("""
+            [openrouter]
+            api_key = "your_actual_api_key_here"
+            """)
+            st.info("📋 **How to add secrets in Streamlit Cloud:**\n"
+                   "1. Go to your app dashboard\n"
+                   "2. Click ⚙️ Settings\n"
+                   "3. Go to Secrets tab\n"
+                   "4. Add the above configuration")
+            st.stop()
+        
         rag_llm = RAGLLM(api_key)
         
         return vectorizer, index, chunks, rag_llm
@@ -215,17 +232,45 @@ def process_query():
     query = st.session_state.user_input
     if query.strip():
         st.session_state.messages.append({"role": "user", "content": query})
-        with st.spinner("Thinking..."):
-            vectorizer, index, chunks, rag_llm = load_chatbot()
-            results = vectorizer.search(query, index, chunks)
-            context_chunks = [chunk for chunk, _ in results]
-            if st.session_state.show_context:
-                with st.expander("Retrieved Context"):
-                    for i, (chunk, score) in enumerate(results, 1):
-                        st.markdown(f"**Chunk {i}** (relevance: {score:.2f})")
-                        st.markdown(chunk)
-            response = rag_llm.generate_response(query, context_chunks)
-            st.session_state.messages.append({"role": "assistant", "content": response})
+        try:
+            with st.spinner("Thinking..."):
+                vectorizer, index, chunks, rag_llm = load_chatbot()
+                results = vectorizer.search(query, index, chunks)
+                context_chunks = [chunk for chunk, _ in results]
+                if st.session_state.show_context:
+                    with st.expander("Retrieved Context"):
+                        for i, (chunk, score) in enumerate(results, 1):
+                            st.markdown(f"**Chunk {i}** (relevance: {score:.2f})")
+                            st.markdown(chunk)
+                response = rag_llm.generate_response(query, context_chunks)
+                st.session_state.messages.append({"role": "assistant", "content": response})
+        except Exception as e:
+            error_msg = str(e)
+            if "payment required" in error_msg.lower() or "402" in error_msg:
+                st.error("💳 **Payment Required**")
+                st.error("Your OpenRouter API key doesn't have sufficient credits.")
+                st.info("**To fix this:**\n"
+                       "1. Go to [OpenRouter.ai](https://openrouter.ai)\n"
+                       "2. Sign in to your account\n"
+                       "3. Add credits to your account\n"
+                       "4. Or get a new API key with credits")
+            elif "invalid api key" in error_msg.lower() or "401" in error_msg:
+                st.error("🔑 **Invalid API Key**")
+                st.error("Your OpenRouter API key is invalid or expired.")
+                st.info("**To fix this:**\n"
+                       "1. Get a valid API key from [OpenRouter.ai](https://openrouter.ai)\n"
+                       "2. Update your Streamlit secrets with the new key")
+            elif "rate limit" in error_msg.lower() or "429" in error_msg:
+                st.error("⏰ **Rate Limit Exceeded**")
+                st.error("Too many requests. Please wait a moment and try again.")
+            else:
+                st.error(f"🚨 **Error**: {error_msg}")
+                st.info("If this persists, please check your API configuration or try again later.")
+            
+            # Add a fallback message
+            fallback_response = "I'm sorry, I'm experiencing technical difficulties right now. Please try again later or contact support if the issue persists."
+            st.session_state.messages.append({"role": "assistant", "content": fallback_response})
+            
         st.session_state.user_input = ""
 
 def main():
@@ -242,6 +287,44 @@ def main():
             "Show retrieved context",
             value=st.session_state.show_context
         )
+        
+        st.markdown("---")
+        st.markdown("### ⚙️ Configuration Help")
+        
+        with st.expander("🔑 API Key Setup"):
+            st.markdown("""
+            **If you're getting payment/API errors:**
+            
+            1. **Get OpenRouter API Key:**
+               - Visit [OpenRouter.ai](https://openrouter.ai)
+               - Sign up/Login to your account
+               - Generate an API key
+               - Add credits to your account
+            
+            2. **Add to Streamlit Secrets:**
+               - Go to your app dashboard
+               - Click ⚙️ Settings → Secrets
+               - Add this configuration:
+               ```
+               [openrouter]
+               api_key = "your_actual_key_here"
+               ```
+            
+            3. **Restart your app** after adding secrets
+            """)
+            
+        with st.expander("🚨 Troubleshooting"):
+            st.markdown("""
+            **Common Issues:**
+            
+            - **402 Payment Required**: Add credits to OpenRouter
+            - **401 Unauthorized**: Check API key is correct
+            - **429 Rate Limited**: Wait and try again
+            - **Timeout**: Check internet connection
+            
+            **Need Help?**
+            Contact the development team if issues persist.
+            """)
 
     # Chat container
     chat_container = st.container()

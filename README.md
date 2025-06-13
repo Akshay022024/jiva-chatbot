@@ -47,18 +47,32 @@ JivaBot/
 ## 🔐 API Key Setup
 
 ### For Local Development:
+### 🔑 **Get Your API Key:**
 1. Create a free account at: [https://openrouter.ai](https://openrouter.ai)  
-2. Copy your API key  
-3. Update `.streamlit/secrets.toml`:
+2. Go to "API Keys" section in your dashboard
+3. Create a new API key
+4. Copy the API key (starts with `sk-or-`)
 
+### 🏠 **For Local Development:**
+Copy the secrets template and add your API key:
+```bash
+cp .streamlit/secrets.toml.template .streamlit/secrets.toml
+```
+Then edit `.streamlit/secrets.toml`:
 ```toml
 [openrouter]
-api_key = "sk-openrouter-xxxxxxxxxxxxxxxxxx"
+api_key = "sk-or-xxxxxxxxxxxxxxxxxx"
 ```
 
-### For Streamlit Cloud:
-1. Go to your Streamlit Cloud app settings
-2. Add a secret with key `openrouter.api_key` and your OpenRouter API key as the value
+### ☁️ **For Streamlit Cloud Deployment:**
+1. Go to your Streamlit Cloud app dashboard
+2. Click ⚙️ **Settings**
+3. Go to **Secrets** tab
+4. Add this configuration:
+```toml
+[openrouter]
+api_key = "sk-or-xxxxxxxxxxxxxxxxxx"
+```
 
 ## 🧠 How RAG Works
 

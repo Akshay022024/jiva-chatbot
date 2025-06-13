@@ -16,6 +16,7 @@ build/
 # Secrets
 secrets/
 *.env
+.streamlit/secrets.toml
 
 # Data files
 data/*.pkl
